@@ -8,4 +8,3 @@ target = "x86_64-osdev.json"
 [target.'cfg(target_os = "none")']
 runner = "bootimage runner"
 rustflags = ["-C", "link-arg=-fuse-ld=mold"]
-

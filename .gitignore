@@ -1,1 +1,3 @@
 target/
+# nvim specific operation
+nvim.shada
