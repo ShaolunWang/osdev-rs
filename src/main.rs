@@ -10,7 +10,7 @@ use osdev::println;
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     println!("{}", _info);
-    loop {}
+    osdev::hlt_loop();
 }
 
 #[cfg(test)]
@@ -26,14 +26,9 @@ pub extern "C" fn _start() -> ! {
     osdev::init();
     x86_64::instructions::interrupts::int3();
 
-    // // womp womp page fault!
-    // unsafe {
-    //     *(0xdeadbeef as *mut u8) = 42;
-    // }
-
     #[cfg(test)]
     test_main();
-    println!("no crashes!");
 
-    loop {}
+    println!("no crashes!");
+    osdev::hlt_loop();
 }
