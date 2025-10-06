@@ -4,7 +4,7 @@ use lazy_static::lazy_static;
 use pc_keyboard::{DecodedKey, HandleControl, Keyboard, ScancodeSet1, layouts};
 use pic8259::ChainedPics;
 use spin::{self, Mutex};
-use x86_64::instructions::port::{self, Port};
+use x86_64::instructions::port::Port;
 use x86_64::structures::idt::InterruptDescriptorTable;
 use x86_64::structures::idt::InterruptStackFrame;
 
