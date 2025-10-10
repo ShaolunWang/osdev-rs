@@ -5,11 +5,8 @@
 #![no_main]
 use bootloader::{BootInfo, entry_point};
 use core::panic::PanicInfo;
-use osdev::println;
-use x86_64::{
-    VirtAddr,
-    structures::paging::{PageTable, Translate},
-};
+use osdev::{memory::BootInfoFrameAllocator, println};
+use x86_64::structures::paging::{Page, Translate};
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -35,7 +32,16 @@ pub fn kernel_main(_boot_info: &'static BootInfo) -> ! {
     use x86_64::VirtAddr;
 
     let physiscal_memory_offset = VirtAddr::new(_boot_info.physical_memory_offset);
-    let mapper = unsafe { memory::init(physiscal_memory_offset) };
+    let mut mapper = unsafe { memory::init(physiscal_memory_offset) };
+    let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&_boot_info.memory_map) };
+
+    // NOTE: 0xdeadbeef doesn't work because it's possibly not mapped during
+    // bootloader initialization yet
+    let page = Page::containing_address(VirtAddr::new(0xdeadbeef));
+    memory::create_example_mapping(page, &mut mapper, &mut frame_allocator);
+
+    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
+    unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e) };
 
     let addresses = [
         // the identity-mapped vga buffer page
