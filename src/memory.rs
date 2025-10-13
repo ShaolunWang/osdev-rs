@@ -1,6 +1,6 @@
 use bootloader::bootinfo::{MemoryMap, MemoryRegionType};
 use x86_64::structures::paging::OffsetPageTable;
-use x86_64::structures::paging::{FrameAllocator, Mapper, Page, PhysFrame, Size4KiB};
+use x86_64::structures::paging::{FrameAllocator, PhysFrame, Size4KiB};
 use x86_64::{PhysAddr, VirtAddr, structures::paging::PageTable};
 unsafe fn active_level_4_table(physical_memory_offset: VirtAddr) -> &'static mut PageTable {
     use x86_64::registers::control::Cr3;
@@ -12,25 +12,13 @@ unsafe fn active_level_4_table(physical_memory_offset: VirtAddr) -> &'static mut
     unsafe { &mut *page_table_ptr }
 }
 
-pub unsafe fn init(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static> { unsafe {
-    let level_4_table = active_level_4_table(physical_memory_offset);
-    OffsetPageTable::new(level_4_table, physical_memory_offset)
-}}
-
-pub fn create_example_mapping(
-    page: Page,
-    mapper: &mut OffsetPageTable,
-    frame_allocator: &mut impl FrameAllocator<Size4KiB>,
-) {
-    use x86_64::structures::paging::PageTableFlags as Flags;
-    let frame = PhysFrame::containing_address(PhysAddr::new(0xb8000));
-    let flags = Flags::PRESENT | Flags::WRITABLE;
-    let map_to_result = unsafe {
-        // FIXME: cant create existed mapping
-        mapper.map_to(page, frame, flags, frame_allocator)
-    };
-    map_to_result.expect("map_to failed").flush();
+pub unsafe fn init(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static> {
+    unsafe {
+        let level_4_table = active_level_4_table(physical_memory_offset);
+        OffsetPageTable::new(level_4_table, physical_memory_offset)
+    }
 }
+
 pub struct EmptyFrameAllocator;
 unsafe impl FrameAllocator<Size4KiB> for EmptyFrameAllocator {
     fn allocate_frame(&mut self) -> Option<PhysFrame> {

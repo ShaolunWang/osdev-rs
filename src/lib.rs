@@ -8,15 +8,15 @@
 use core::panic::PanicInfo;
 
 #[cfg(test)]
-use bootloader::BootInfo;
+use bootloader::{BootInfo, entry_point};
 
 pub mod gdt;
 pub mod interrupts;
 
+pub mod allocator;
 pub mod memory;
 pub mod serial;
 pub mod vga_buffer;
-pub mod allocator;
 
 extern crate alloc;
 
