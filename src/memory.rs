@@ -12,10 +12,10 @@ unsafe fn active_level_4_table(physical_memory_offset: VirtAddr) -> &'static mut
     unsafe { &mut *page_table_ptr }
 }
 
-pub unsafe fn init(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static> {
+pub unsafe fn init(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static> { unsafe {
     let level_4_table = active_level_4_table(physical_memory_offset);
     OffsetPageTable::new(level_4_table, physical_memory_offset)
-}
+}}
 
 pub fn create_example_mapping(
     page: Page,

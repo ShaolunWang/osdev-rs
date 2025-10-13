@@ -5,9 +5,11 @@
 #![no_main]
 use bootloader::{BootInfo, entry_point};
 use core::panic::PanicInfo;
-use osdev::{memory::BootInfoFrameAllocator, println};
+use osdev::{allocator, memory::BootInfoFrameAllocator, println};
 use x86_64::structures::paging::{Page, Translate};
 
+extern crate alloc;
+use alloc::boxed::Box;
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
@@ -32,11 +34,10 @@ pub fn kernel_main(_boot_info: &'static BootInfo) -> ! {
     use x86_64::VirtAddr;
 
     let physiscal_memory_offset = VirtAddr::new(_boot_info.physical_memory_offset);
+    println!("[Paging]: vga write testing 0xdeadbeef");
     let mut mapper = unsafe { memory::init(physiscal_memory_offset) };
     let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&_boot_info.memory_map) };
 
-    // NOTE: 0xdeadbeef doesn't work because it's possibly not mapped during
-    // bootloader initialization yet
     let page = Page::containing_address(VirtAddr::new(0xdeadbeef));
     memory::create_example_mapping(page, &mut mapper, &mut frame_allocator);
 
@@ -59,6 +60,9 @@ pub fn kernel_main(_boot_info: &'static BootInfo) -> ! {
         println!("{:?} -> {:?}", virt, phys);
     }
 
+    allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed");
+
+    let x = Box::new(41);
     #[cfg(test)]
     test_main();
 

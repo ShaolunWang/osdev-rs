@@ -9,7 +9,6 @@ use core::panic::PanicInfo;
 
 #[cfg(test)]
 use bootloader::BootInfo;
-use bootloader::entry_point;
 
 pub mod gdt;
 pub mod interrupts;
@@ -17,6 +16,9 @@ pub mod interrupts;
 pub mod memory;
 pub mod serial;
 pub mod vga_buffer;
+pub mod allocator;
+
+extern crate alloc;
 
 /* INIT */
 pub fn init() {
