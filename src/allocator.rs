@@ -6,8 +6,11 @@ use x86_64::{
         FrameAllocator, Mapper, Page, PageTableFlags, Size4KiB, mapper::MapToError,
     },
 };
+
+use crate::allocator::linked_list::LinkedListAllocator;
 pub struct Dummy;
 pub mod bump;
+pub mod linked_list;
 
 pub struct Locked<A> {
     inner: spin::Mutex<A>,
@@ -24,19 +27,16 @@ impl<A> Locked<A> {
     }
 }
 fn align_up(addr: usize, align: usize) -> usize {
-    let remainder = addr % align;
-    if remainder == 0 {
-        addr
-    } else {
-        addr - remainder + align
-    }
+    (addr + align - 1) & !(align - 1)
 }
 
 pub const HEAP_START: usize = 0x_4444_4444_0000;
 pub const HEAP_SIZE: usize = 100 * 1024; // 100kib
 
 #[global_allocator]
-static ALLOCATOR: Locked<BumpAllocator> = Locked::new(BumpAllocator::new());
+//static ALLOCATOR: Locked<BumpAllocator> = Locked::new(BumpAllocator::new()); // -> this gives
+//errors on long lived due to how our simple ref counter works
+static ALLOCATOR: Locked<LinkedListAllocator> = Locked::new(LinkedListAllocator::new());
 
 pub fn init_heap(
     mapper: &mut impl Mapper<Size4KiB>,
